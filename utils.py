@@ -45,3 +45,25 @@ def spectral_flux(current_mag, previous_mag, epsilon=1e-8):
     diff = current_norm - previous_norm
     flux = torch.norm(diff.view(diff.shape[0], -1), dim=1)
     return flux
+
+def compute_fis_scores(filter_flux, filter_utilities, alpha=0.5, epsilon=1e-6):
+    """
+    Computes Filter Importance Score (FIS) for each filter.
+
+    Args:
+        filter_flux: dict {(layer_name, filter_idx): flux_value}
+        filter_utilities: dict {(layer_name, filter_idx): utility_value}
+        alpha: weighting exponent for chaos penalty (0 = ignore flux, 1 = full penalty)
+        epsilon: small value to avoid div-by-zero
+
+    Returns:
+        fis_scores: dict {(layer_name, filter_idx): importance_score}
+    """
+    fis_scores = {}
+    for key in filter_utilities:
+        utility = filter_utilities.get(key, 0.0)
+        flux = filter_flux.get(key, 1e-6)
+        # Chaos-tolerant FIS: prioritize useful filters, don't over-penalize chaotic ones
+        score = utility * (1.0 / (flux + epsilon)) ** alpha
+        fis_scores[key] = score
+    return fis_scores
