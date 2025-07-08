@@ -1,0 +1,58 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# PyTorch checkpoints & weight dumps
+*.pth
+*.pt
+*.pkl
+
+# Datasets / large files (optional)
+data/
+datasets/
+*.zip
+*.tar
+*.gz
+
+# Logs and tensorboard
+*.log
+*.out
+runs/
+events.out.tfevents.*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VS Code / PyCharm / IDE settings
+.vscode/
+.idea/
+
+# Compiled files
+*.o
+*.obj
+*.dll
+*.exe
+
+# Spectral visualizations or temp plots
+*.png
+*.svg
+*.pdf
+*.eps
+
+# Output folders
+__output__/
+outputs/
+checkpoints/
+weights/
+filter_behavior.json
