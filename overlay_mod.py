@@ -13,22 +13,25 @@ class OverlayModulator:
         self.overlay_weights = {}  # group_id → scalar multiplier
         self.hooks = []  # Track hooks for cleanup
 
-    def compute_overlay_weights(self, group_flux, group_utility, alpha=1.0, beta=1.0):
+    def compute_overlay_weights(self, group_flux=None, group_utility=None, alpha=1.0, beta=1.0):
         """
         Combines flux + utility to compute overlay weight per group.
+        If group_flux is None, use only group_utility for overlay weights.
         Lower = preserve, higher = allow learning.
-
-        overlay_weight[g] = sigmoid(α * flux[g] - β * utility[g])
         """
         self.overlay_weights.clear()
-
-        for gid in group_flux:
-            flux = group_flux.get(gid, 0)
-            utility = group_utility.get(gid, 0)
-
-            raw = alpha * flux - beta * utility
-            overlay = 1 / (1 + torch.exp(-torch.tensor(raw)))
-            self.overlay_weights[gid] = overlay.item()
+        if group_flux is None and group_utility is not None:
+            for gid, utility in group_utility.items():
+                # Lower utility = preserve, higher = allow learning
+                overlay = 1 / (1 + torch.exp(-torch.tensor(-beta * utility)))
+                self.overlay_weights[gid] = overlay.item()
+        else:
+            for gid in group_flux:
+                flux = group_flux.get(gid, 0)
+                utility = group_utility.get(gid, 0) if group_utility else 0
+                raw = alpha * flux - beta * utility
+                overlay = 1 / (1 + torch.exp(-torch.tensor(raw)))
+                self.overlay_weights[gid] = overlay.item()
 
     def remove_hooks(self):
         """Remove all registered hooks"""

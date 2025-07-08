@@ -3,22 +3,20 @@ import torch.fft
 
 def create_filter_groups(model, group_size=8):
     """
-    Returns a dict mapping (layer_name, filter_idx) → group_id.
+    Create groups of filters from all convolutional layers in ResNet.
+    Returns a mapping: {(layer_name, filter_idx): group_id}
     """
-    group_assignments = {}
+    group_map = {}
     group_id = 0
-
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):
-            out_channels = module.out_channels
-            for f in range(out_channels):
-                group_assignments[(name, f)] = group_id
-                if (f + 1) % group_size == 0:
-                    group_id += 1
-            if out_channels % group_size != 0:
+            num_filters = module.out_channels
+            for i in range(0, num_filters, group_size):
+                for j in range(i, min(i + group_size, num_filters)):
+                    group_map[(name, j)] = group_id
                 group_id += 1
-
-    return group_assignments
+    print(f"[DEBUG] Total groups created: {len(set(group_map.values()))}")
+    return group_map
 
 
 def fft2d_filter(filter_weights):

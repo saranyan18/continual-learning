@@ -1,11 +1,12 @@
 import torch
 from torch import nn, optim
 from dataset_loader import load_cifar100_cl_tasks
-from cnn import cnn
+from cnn import ResNet18Backbone
 from utils import create_filter_groups
 from spectral_tracker import SpectralTracker
 from grp_util_tracker import GroupUtilityTracker
 from overlay_mod import OverlayModulator
+from logger import create_log_entry
 
 def evaluate(model, test_loader):
     model.eval()
@@ -39,20 +40,23 @@ def train_task(model, train_loader, optimizer, criterion, utility_tracker, overl
             # Apply overlay modulation for continual learning
             if task_id > 0:
                 try:
-                    group_util = utility_tracker.compute_group_utilities()
-                    # Compute group flux from filter flux
-                    group_flux = {}
-                    for (layer_name, filter_idx), flux in filter_flux.items():
-                        gid = overlay_mod.group_assignments.get((layer_name, filter_idx))
+                    # Compute FIS scores and aggregate by group
+                    filter_utilities = getattr(utility_tracker, 'filter_utilities', None)
+                    if filter_utilities is None:
+                        # If not tracked, fallback to group utility
+                        group_util = utility_tracker.compute_group_utilities()
+                        filter_utilities = {}
+                        for (layer_name, idx), gid in overlay_mod.group_assignments.items():
+                            filter_utilities[(layer_name, idx)] = group_util.get(gid, 0.0)
+                    from utils import compute_fis_scores
+                    fis_scores = compute_fis_scores(filter_flux, filter_utilities)
+                    group_fis = {}
+                    for (layer_name, idx), score in fis_scores.items():
+                        gid = overlay_mod.group_assignments.get((layer_name, idx))
                         if gid is not None:
-                            if gid not in group_flux:
-                                group_flux[gid] = []
-                            group_flux[gid].append(flux)
-                    # Average flux per group
-                    group_flux = {gid: sum(fluxes)/len(fluxes) 
-                                 for gid, fluxes in group_flux.items() if fluxes}
-                    # Apply overlay
-                    overlay_mod.compute_overlay_weights(group_flux, group_util)
+                            group_fis.setdefault(gid, []).append(score)
+                    group_fis = {gid: sum(scores)/len(scores) for gid, scores in group_fis.items()}
+                    overlay_mod.compute_overlay_weights(group_flux=None, group_utility=group_fis)
                     overlay_mod.apply_overlay()
                 except Exception as e:
                     print(f"Warning: Overlay modulation failed: {e}")
@@ -69,15 +73,15 @@ def train_task(model, train_loader, optimizer, criterion, utility_tracker, overl
 def train():
     # --- Setup ---
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    num_tasks = 3
-    batch_size = 32
-    epochs = 20  # You can increase later
+    num_tasks = 5
+    batch_size = 16
+    epochs = 10 # You can increase later
 
     # --- Load Data ---
     tasks = load_cifar100_cl_tasks(num_tasks=num_tasks, batch_size=batch_size)
 
     # --- Initialize Model + Trackers ---
-    model = cnn(num_classes=100).to(device)
+    model = ResNet18Backbone(num_classes=100, pretrained=False).to(device)
     group_map = create_filter_groups(model, group_size=8)
 
     spectral_tracker = SpectralTracker()
@@ -128,6 +132,22 @@ def train():
     print("\n🌍 Final Evaluation on Full CIFAR-100 Test Set:")
     total_acc = evaluate(model, full_test_loader)
     print(f"🧠 Total CIFAR-100 Accuracy: {total_acc:.2f}%")
+
+    # --- Logging Experiment ---
+    create_log_entry(
+        model_name="ResNet18Backbone",
+        architecture=str(model),
+        num_tasks=num_tasks,
+        epochs=epochs,
+        batch_size=batch_size,
+        optimizer_name="Adam",
+        learning_rate=1e-3,
+        modulation="OverlayModulator",
+        cosine_scaling=getattr(model.classifier, 'scale', None).item() if hasattr(model, 'classifier') and hasattr(model.classifier, 'scale') else None,
+        task_accuracies=acc_history,
+        full_accuracy=total_acc,
+        notes="Final evaluation and logging."
+    )
 
 if __name__ == "__main__":
     train()
