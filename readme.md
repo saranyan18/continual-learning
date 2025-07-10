@@ -1,4 +1,4 @@
-# 🧠 OneShot_MetaReplay: Spectral Filter Utility Modulation for Continual Learning
+# 🧠Spectral Filter Utility Modulation for Continual Learning
 
 This project implements a **One-Shot Continual Learning framework** using **Spectral Filter Flux Tracking** and **Group-wise Utility Modulation**. It combines filter-wise frequency analysis with activation-gradient-based utility to mitigate catastrophic forgetting in task-incremental learning setups.
 
