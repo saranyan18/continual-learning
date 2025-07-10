@@ -43,7 +43,7 @@ This project implements a **One-Shot Continual Learning framework** using **Spec
    - Promotes stability in previously useful filters.
 
 ### 4. **Continual Training**
-   - Trains on 5 CIFAR-100 tasks sequentially.
+   - Trains on 20 CIFAR-100 tasks sequentially.
    - Applies overlay modulation from **Task 2 onwards**.
 
 ---
