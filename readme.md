@@ -1,10 +1,10 @@
-# 🧠Spectral Filter Utility Modulation for Continual Learning
+# Spectral Filter Utility Modulation for Continual Learning
 
 This project implements a **One-Shot Continual Learning framework** using **Spectral Filter Flux Tracking** and **Group-wise Utility Modulation**. It combines filter-wise frequency analysis with activation-gradient-based utility to mitigate catastrophic forgetting in task-incremental learning setups.
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 .
@@ -26,7 +26,7 @@ This project implements a **One-Shot Continual Learning framework** using **Spec
 
 ---
 
-## 🚀 How It Works
+## How It Works
 
 ### 1. **Filter Spectral Flux**
    - Tracks FFT of CNN filters across tasks.
@@ -48,14 +48,14 @@ This project implements a **One-Shot Continual Learning framework** using **Spec
 
 ---
 
-## 🧪 Results
+##  Results
 
 - Tracks per-task accuracy and final CIFAR-100 performance.
 - Logs forgetting metrics and overall accuracy post all tasks.
 
 ---
 
-## 📊 Example Output
+## Example Output
 
 ```
 🔁 Task 1
@@ -73,8 +73,8 @@ Task 1: 38.22%
 Task 2: 44.57%
 ...
 
-🌍 Final Evaluation on Full CIFAR-100 Test Set:
-🧠 Total CIFAR-100 Accuracy: 46.92%
+ Final Evaluation on Full CIFAR-100 Test Set:
+ Total CIFAR-100 Accuracy: 46.92%
 ```
 
 ---
@@ -95,7 +95,7 @@ python trainer.py
 
 ---
 
-## 🧠 Notes
+## Notes
 
 - CIFAR-100 is split into 5 incremental tasks of 20 classes each.
 - Duplicate files (e.g., `grp_util_tracker.py`, `utils.py`) exist at root and in subfolders — refactor recommended.
@@ -106,17 +106,6 @@ python trainer.py
 ## 📚 Citation (if you plan to publish)
 
 If this work inspires your research or you're building upon it, consider citing once the paper is published.
-
----
-
-## 🔥 TODO
-
-- [ ] Add unit tests
-- [ ] Modularize duplicate code
-- [ ] Extend to more datasets (e.g., TinyImageNet)
-- [ ] Implement replay buffer or dual-mode encoder
-
----
 
 ## 👨‍💻 Author
 
