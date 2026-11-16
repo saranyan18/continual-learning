@@ -103,10 +103,6 @@ python trainer.py
 
 ---
 
-## 📚 Citation (if you plan to publish)
-
-If this work inspires your research or you're building upon it, consider citing once the paper is published.
-
 ## 👨‍💻 Author
 
 Built by [@saranyan18](https://github.com/saranyan18)  
